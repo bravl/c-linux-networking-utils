@@ -51,7 +51,6 @@ struct ifaddrs *get_interfaces(int type)
 
 			copy_ifaddrs(tmp,intf);
 			if (!intfret){
-				printf("Setting head\n");
 				intfret = tmp;
 				intfiter = intfret;
 			} else {
@@ -63,13 +62,36 @@ struct ifaddrs *get_interfaces(int type)
 	freeifaddrs(intfs);
 	return intfret;
 }
+// Add cleanup intefaces at some point
+
+void cleanup_list(struct ifaddrs *head)
+{
+	struct ifaddrs *delete,*tmp;
+	for (delete = head; delete != NULL; delete = tmp) {
+		printf("freeing %s\n",delete->ifa_name);
+		tmp = delete->ifa_next;
+		free(delete->ifa_name);
+		free(delete->ifa_addr);
+		free(delete->ifa_netmask);
+		free(delete);
+	}
+	head = NULL;
+}
 
 int main(void) {
-	struct ifaddrs *intf, *ret;
-
+	struct ifaddrs *intf = NULL, *ret = NULL, *ret2 = NULL;
+	printf("IPv4\n");
 	ret = get_interfaces(AF_INET);
-	for (intf = ret; intf->ifa_next != NULL; intf = intf->ifa_next) {
+	for (intf = ret; intf != NULL; intf = intf->ifa_next) {
 		printf("%s\n",intf->ifa_name);
 	}
-	get_interfaces(AF_INET6);
+	cleanup_list(ret);
+	if (!ret) printf("List cleaned\n");
+
+	printf("IPv6\n");
+	ret = get_interfaces(AF_INET6);
+	for (intf = ret; intf != NULL; intf = intf->ifa_next) {
+		printf("%s\n",intf->ifa_name);
+	}
+	cleanup_list(ret);
 }
