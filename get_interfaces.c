@@ -62,13 +62,22 @@ struct ifaddrs *get_interfaces(int type)
 	freeifaddrs(intfs);
 	return intfret;
 }
-// Add cleanup intefaces at some point
+
+void retrieve_ip_address(struct ifaddrs *intf)
+{
+	int family;
+	char host[NI_MAXHOST];
+
+	getnameinfo(intf->ifa_addr, (family == AF_INET) ?
+		    sizeof(struct sockaddr_in) : sizeof(struct sockaddr_in6),
+		    host, NI_MAXHOST, NULL, 0, NI_NUMERICHOST);
+	printf("%s\n",host);
+}
 
 void cleanup_list(struct ifaddrs *head)
 {
 	struct ifaddrs *delete,*tmp;
 	for (delete = head; delete != NULL; delete = tmp) {
-		printf("freeing %s\n",delete->ifa_name);
 		tmp = delete->ifa_next;
 		free(delete->ifa_name);
 		free(delete->ifa_addr);
@@ -83,7 +92,8 @@ int main(void) {
 	printf("IPv4\n");
 	ret = get_interfaces(AF_INET);
 	for (intf = ret; intf != NULL; intf = intf->ifa_next) {
-		printf("%s\n",intf->ifa_name);
+		printf("%s: ",intf->ifa_name);
+		retrieve_ip_address(intf);
 	}
 	cleanup_list(ret);
 	if (!ret) printf("List cleaned\n");
@@ -91,7 +101,8 @@ int main(void) {
 	printf("IPv6\n");
 	ret = get_interfaces(AF_INET6);
 	for (intf = ret; intf != NULL; intf = intf->ifa_next) {
-		printf("%s\n",intf->ifa_name);
+		printf("%s: ",intf->ifa_name);
+		retrieve_ip_address(intf);
 	}
 	cleanup_list(ret);
 }
