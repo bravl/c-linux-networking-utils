@@ -70,9 +70,15 @@ int main()
 			continue;
 		}
 
-		/* Following code should theoretically be pushed to either a thread or forked if
-		 * you want concurrent connections. */
+		 /* For concurrent connections you'll want to: . */
 		
+		/* Option 1: Either you run pthread_create here and pass the socket as an option to the thread */
+		/* Option 2: You run fork() here, close the main socket and continue executing using only the 
+		 * new_sock */
+		/* Option 3: You create a list of sockets and run select() in a thread and handle all connections
+		 * in the same thread instead of 1 thread per connection */
+
+		/* Retrieve connection details */
 		printf("Connection from: %s:%d\n", inet_ntoa(client.sin_addr), ntohs(client.sin_port));
 
 		/* Read / Write here */
